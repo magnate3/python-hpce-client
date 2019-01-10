@@ -39,6 +39,8 @@ def create_ls(interface):
     for i in parse_mpls_te:
         if re.match('#0', i):
             dict_mpls_te[previous] = i.split(': ')[1]
+        elif re.match('Link-ID', i):
+            dict_mpls_te['Link-ID'] = i.split(': ')[1]
         elif re.match('Maximum Bandwidth', i):
             dict_mpls_te[i.split(': ')[0]] = float(i.split(': ')[1])
         previous = i
@@ -49,8 +51,6 @@ def create_ls(interface):
             sr_info = i
 
     linkstate = [{'Opaque-Type': 1, 'Advertising Router': decode_sr_db['srdbID'], 'Local Interface IP Addresses': [{0: dict_mpls_te['Local Interface IP Address: 1']}], 'Maximum Reservable Bandwidth': dict_mpls_te['Maximum Bandwidth']}]
-    linkstate.append({'Opaque-Type': 4, 'Advertising Router': decode_sr_db['srdbID'], 'Segment Routing Range TLV': [None, {'SID Label': decode_sr_db['srNodes'][i]['srgbLabel']}]})
-    linkstate.append({'Opaque-Type': 7, 'Advertising Router': decode_sr_db['srdbID'], 'Prefix SID Sub-TLV': [None, None, None, None, {'Index': decode_sr_db['srNodes'][i]['extendedPrefix'][0]['sid']}]})
-    linkstate.append({'Opaque-Type': 8, 'Advertising Router': decode_sr_db['srdbID'], 'Adj-SID Sub-TLV': [None, None, None, None, {'Label': ADJACENCYSID}]})
+    linkstate.append({'Opaque-Type': 8, 'Advertising Router': decode_sr_db['srdbID'], 'Adj-SID Sub-TLV': [None, None, None, None, {'Label': ADJACENCYSID}], 'Extended Link TLV': [None, None, {'Link ID': dict_mpls_te['Link-ID']}, {'Link data': dict_mpls_te['Local Interface IP Address: 1']}]})
 
     return linkstate
